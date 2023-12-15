@@ -4,26 +4,27 @@ import math
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.pos = (1920 // 2, 1080 // 2)
         super().__init__(all_sprites)
-        self.radius = 10
+        self.pos = (1920 // 2, 1080 // 2)
+        self.radius = 35
         self.image = pygame.Surface((2 * self.radius, 2 * self.radius),
                                     pygame.SRCALPHA, 32)
-        pygame.draw.circle(self.image, pygame.Color("red"),
+        pygame.draw.circle(self.image, pygame.Color("black"),
                            (self.radius, self.radius), self.radius)
-        self.rect = pygame.Rect(self.pos[0], self.pos[1], 2 * self.radius, 2 * self.radius)
-        self.player_speed = 1
+        self.rect = self.image.get_rect()
+        self.rect.x = self.pos[0]
+        self.rect.y = self.pos[1]
+        self.player_speed = 5
 
-
-    def update(self, m_pos):
-        dx = m_pos[0] - self.rect.centerx
-        dy = m_pos[1] - self.rect.centery
-        angle = math.atan2(dy, dx)
-        vx = self.player_speed * math.cos(angle)
-        vy = self.player_speed * math.sin(angle)
-        self.rect = self.rect.move(vx, vy)
-
+    def update(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        dx = mouse_x - self.rect.centerx
+        dy = mouse_y - self.rect.centery
+        distance = math.dist((mouse_x, mouse_y), (self.rect.centerx, self.rect.centery))
+        if distance >= self.player_speed:
+            self.rect.move_ip((self.player_speed * dx) / distance, (self.player_speed * dy) / distance)
+        else:
+            self.rect.center = pygame.mouse.get_pos()
 
 class Play:
     def __init__(self):
@@ -31,6 +32,7 @@ class Play:
 
 
 if __name__ == '__main__':
+    enemies = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()
     player = Player()
     all_sprites.add(player)
@@ -52,5 +54,9 @@ if __name__ == '__main__':
                         pause = False
                     else:
                         pause = True
-        all_sprites.update(pygame.mouse.get_pos())
-
+        all_sprites.update()
+        all_sprites.draw(screen)
+        pygame.display.flip()
+        screen.fill((255, 255, 255))
+    clock.tick(120)
+pygame.quit()
