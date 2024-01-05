@@ -6,8 +6,74 @@ RADIUS = 35
 FPS = 120
 
 
-class Enemies(pygame.sprite.Sprite):
-    def __init__(self):
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, x_s, y_s):
+        super().__init__(enemies)
+        self.lifetime = FPS * 15
+        self.add(enemies)
+        self.add(all_sprites)
+        self.image = pygame.Surface((2 * RADIUS, 2 * RADIUS),
+                                    pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, pygame.Color("gray"),
+                           (RADIUS, RADIUS), RADIUS)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x
+        self.rect.y = y
+        self.y_s = y_s
+        self.x_s = x_s
+
+    def update(self):
+        if self.lifetime < 0:
+            self.kill()
+        self.rect = self.rect.move(self.x_s, self.y_s)
+        self.lifetime -= 1
+
+
+class Enemies_slowly(pygame.sprite.Sprite):
+    def __init__(self, x, y, x_s, y_s):
+        super().__init__(enemies)
+        self.lifetime = FPS * 10
+        self.add(enemies)
+        self.add(all_sprites)
+        self.image = pygame.Surface((2 * RADIUS, 2 * RADIUS),
+                                    pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, pygame.Color("green"),
+                           (RADIUS, RADIUS), RADIUS)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x
+        self.rect.y = y
+        self.y_s = y_s
+        self.x_s = x_s
+
+
+
+    def bam(self):
+        Bullet(self.rect.x, self.rect.y, -2, -2)
+        Bullet(self.rect.x, self.rect.y, 2, 2)
+        Bullet(self.rect.x, self.rect.y, -2, 2)
+        Bullet(self.rect.x, self.rect.y, 2, -2)
+        self.kill()
+
+    def update(self):
+        if self.lifetime < 0:
+            self.bam()
+        if self.lifetime < self.lifetime - FPS * 5:
+            self.y_s -= 0.2
+            self.x_s -= 0.2
+        self.rect = self.rect.move(self.x_s, self.y_s)
+        self.lifetime -= 1
+        if pygame.sprite.spritecollideany(self, horizontal):
+            self.y_s = -self.y_s
+            self.lifetime -= 1
+        if pygame.sprite.spritecollideany(self, vertical):
+            self.x_s = -self.x_s
+            self.lifetime -= 1
+
+
+class Enemies_dvd(pygame.sprite.Sprite):
+    def __init__(self, x, y, x_s, y_s):
         super().__init__(enemies)
         self.lifetime = 3
         self.add(enemies)
@@ -18,32 +84,14 @@ class Enemies(pygame.sprite.Sprite):
                            (RADIUS, RADIUS), RADIUS)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        side = random.randint(0, 3)
-        if side == 0:
-            self.rect.x = random.randint(1, 1920)
-            self.rect.y = 1
-            self.y_s = random.randint(-1, 1)
-            self.x_s = 2
-        elif side == 1:
-            self.rect.x = 1
-            self.rect.y = random.randint(1, 1080)
-            self.y_s = random.randint(-1, 1)
-            self.x_s = 2
-        elif side == 2:
-            self.rect.x = 1920 - RADIUS
-            self.rect.y = random.randint(1, 1080)
-            self.y_s = random.randint(-1, 1)
-            self.x_s = -2
-        elif side == 3:
-            self.rect.x = random.randint(1, 1920)
-            self.rect.y = 1080 - RADIUS
-            self.y_s = -2
-            self.x_s = random.randint(-1, 1)
+        self.rect.x = x
+        self.rect.y = y
+        self.y_s = y_s
+        self.x_s = x_s
 
     def update(self):
         if self.lifetime < 0:
             self.kill()
-        self.rect = self.rect.move(self.x_s, self.y_s)
         self.rect = self.rect.move(self.x_s, self.y_s)
         if pygame.sprite.spritecollideany(self, horizontal):
             self.y_s = -self.y_s
@@ -57,7 +105,6 @@ class Enemies(pygame.sprite.Sprite):
 class Border(pygame.sprite.Sprite):
     def __init__(self, x1, y1, x2, y2):
         super().__init__(all_sprites)
-        self.add(enemies)
         if x1 == x2:
             self.add(vertical)
             self.image = pygame.Surface([1, y2 - y1])
@@ -85,8 +132,14 @@ class Player(pygame.sprite.Sprite):
         self.player_speed = 9
 
     def update(self):
-        if pygame.sprite.spritecollideany(self, enemies):
-            print('colides')
+        for en in enemies:
+            offset = (abs(self.rect.x - en.rect.x), abs(self.rect.y - en.rect.y))
+            if self.mask.overlap_area(en.mask, offset) > 0:
+                print('collides')
+        if pygame.sprite.spritecollideany(self, horizontal):
+            print('collides')
+        if pygame.sprite.spritecollideany(self, vertical):
+            print('collides')
         mouse_x, mouse_y = pygame.mouse.get_pos()
         dx = mouse_x - self.rect.centerx
         dy = mouse_y - self.rect.centery
@@ -110,10 +163,57 @@ player = Player()
 all_sprites.add(player)
 
 
+def slow():
+    SPEED = 1
+    for i in range(2):
+        side = random.randint(0, 3)
+        if side == 0:
+            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            y = RADIUS + 1
+            y_s = SPEED
+            x_s = random.choice([SPEED, -SPEED])
+        elif side == 1:
+            x = RADIUS + 1
+            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y_s = random.choice([SPEED, -SPEED])
+            x_s = SPEED
+        elif side == 2:
+            x = 1920 - (RADIUS + 1)
+            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y_s = random.choice([SPEED, -SPEED])
+            x_s = -SPEED
+        elif side == 3:
+            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            y = 1080 - (RADIUS + 1)
+            y_s = -SPEED
+            x_s = random.choice([SPEED, -SPEED])
+        Enemies_slowly(x, y, x_s, y_s)
 
 def Circal_dvd():
+    SPEED = 4
     for i in range(2):
-        Enemies()
+        side = random.randint(0, 3)
+        if side == 0:
+            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            y = RADIUS + 1
+            y_s = SPEED
+            x_s = random.choice([SPEED, -SPEED])
+        elif side == 1:
+            x = RADIUS + 1
+            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y_s = random.choice([SPEED, -SPEED])
+            x_s = SPEED
+        elif side == 2:
+            x = 1920 - (RADIUS + 1)
+            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y_s = random.choice([SPEED, -SPEED])
+            x_s = -SPEED
+        elif side == 3:
+            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            y = 1080 - (RADIUS + 1)
+            y_s = -SPEED
+            x_s = random.choice([SPEED, -SPEED])
+        Enemies_dvd(x, y, x_s, y_s)
 
 
 def play():
@@ -145,6 +245,7 @@ def play():
             time += 1
             if (time / FPS) % 15 == 0:
                 print('spawn')
+                slow()
                 Circal_dvd()
             x, y = pygame.mouse.get_pos()
             screen.blit(mouse_cursor, (x - 35, y - 35))
