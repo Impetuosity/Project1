@@ -266,22 +266,42 @@ def Circal_dvd():
             x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
             y = RADIUS + 1
             y_s = SPEED
-            x_s = random.choice([SPEED, -SPEED])
+            if x == RADIUS * 4:
+                x_s = SPEED
+            elif x == width - RADIUS * 4:
+                x_s = -SPEED
+            elif width // 2:
+                x_s = random.choice([SPEED, -SPEED])
         elif side == 1:
             x = RADIUS + 1
             y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
-            y_s = random.choice([SPEED, -SPEED])
+            if x == RADIUS * 4:
+                y_s = -SPEED
+            elif x == height - RADIUS * 4:
+                y_s = SPEED
+            elif height // 2:
+                y_s = random.choice([SPEED, -SPEED])
             x_s = SPEED
         elif side == 2:
-            x = width - (RADIUS + 1)
+            x = width - (RADIUS * 2)
             y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
-            y_s = random.choice([SPEED, -SPEED])
+            if x == RADIUS * 4:
+                y_s = SPEED
+            elif x == height - RADIUS * 4:
+                y_s = -SPEED
+            elif height // 2:
+                y_s = random.choice([SPEED, -SPEED])
             x_s = -SPEED
         elif side == 3:
             x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
-            y = height - (RADIUS + 1)
-            y_s = -SPEED
-            x_s = random.choice([SPEED, -SPEED])
+            y = height - (RADIUS * 2)
+            y_s = SPEED
+            if x == RADIUS * 4:
+                x_s = -SPEED
+            elif x == width - RADIUS * 4:
+                x_s = SPEED
+            elif width // 2:
+                x_s = random.choice([SPEED, -SPEED])
         Enemies_dvd(x, y, x_s, y_s)
 
 
