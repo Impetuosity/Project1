@@ -332,6 +332,7 @@ def draw():
 
 def die():
     global pause
+    pygame.mouse.set_visible(True)
     pause = False
     screen.fill((255, 255, 255))
     Color = pygame.Color('black')
