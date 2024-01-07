@@ -2,9 +2,15 @@ import pygame
 import math
 import random
 
+
+pygame.init()
+infoObject = pygame.display.Info()
+print(infoObject.current_w, infoObject.current_h)
+width, height = (infoObject.current_w, infoObject.current_h)
+Size_k = width // 1920
 RADIUS = 35
 FPS = 120
-
+HARD = 0
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x_s, y_s):
@@ -20,8 +26,8 @@ class Bullet(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
-        self.y_s = y_s
-        self.x_s = x_s
+        self.y_s = y_s * Size_k
+        self.x_s = x_s * Size_k
 
     def update(self):
         if self.lifetime < 0:
@@ -44,8 +50,8 @@ class Enemies_slowly(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
-        self.y_s = y_s
-        self.x_s = x_s
+        self.y_s = y_s * Size_k
+        self.x_s = x_s * Size_k
 
 
 
@@ -86,8 +92,8 @@ class Enemies_dvd(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
-        self.y_s = y_s
-        self.x_s = x_s
+        self.y_s = y_s * Size_k
+        self.x_s = x_s * Size_k
 
     def update(self):
         if self.lifetime < 0:
@@ -118,7 +124,7 @@ class Border(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.pos = (1920 // 2, 1080 // 2)
+        self.pos = (width // 2, height // 2)
         self.radius = 35
         self.image = pygame.Surface((2 * self.radius, 2 * self.radius),
                                     pygame.SRCALPHA, 32)
@@ -129,7 +135,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = self.pos[0]
         self.rect.y = self.pos[1]
-        self.player_speed = 9
+        self.player_speed = 9 * Size_k
 
     def update(self):
         for en in enemies:
@@ -155,76 +161,127 @@ horizontal = pygame.sprite.Group()
 vertical = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
-Border(0, 0, 1920, 0)
-Border(0, 1080, 1920, 1080)
-Border(0, 0, 0, 1080)
-Border(1920, 0, 1920, 1080)
+Border(0, 0, width, 0)
+Border(0, height, width, height)
+Border(0, 0, 0, height)
+Border(width, 0, width, height)
 player = Player()
 all_sprites.add(player)
 
 
 def slow():
-    SPEED = 1
-    for i in range(2):
+    if HARD == 0:
+        NUM = 0
+        SPEED = 0
+    elif HARD == 1:
+        NUM = 2
+        SPEED = 1
+    elif HARD == 2:
+        NUM = 4
+        SPEED = 1
+    elif HARD == 3:
+        NUM = 6
+        SPEED = 1.5
+    for i in range(NUM):
         side = random.randint(0, 3)
         if side == 0:
-            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
             y = RADIUS + 1
             y_s = SPEED
             x_s = random.choice([SPEED, -SPEED])
         elif side == 1:
             x = RADIUS + 1
-            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
             y_s = random.choice([SPEED, -SPEED])
             x_s = SPEED
         elif side == 2:
-            x = 1920 - (RADIUS + 1)
-            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            x = width - (RADIUS + 1)
+            y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
             y_s = random.choice([SPEED, -SPEED])
             x_s = -SPEED
         elif side == 3:
-            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
-            y = 1080 - (RADIUS + 1)
+            x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
+            y = height - (RADIUS + 1)
             y_s = -SPEED
             x_s = random.choice([SPEED, -SPEED])
         Enemies_slowly(x, y, x_s, y_s)
 
 def Circal_dvd():
-    SPEED = 4
-    for i in range(2):
+    if HARD == 0:
+        NUM = 0
+        SPEED = 0
+    elif HARD == 1:
+        NUM = 2
+        SPEED = 2
+    elif HARD == 2:
+        NUM = 4
+        SPEED = 3
+    elif HARD == 3:
+        NUM = 6
+        SPEED = 4
+    for i in range(NUM):
         side = random.randint(0, 3)
         if side == 0:
-            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
+            x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
             y = RADIUS + 1
             y_s = SPEED
             x_s = random.choice([SPEED, -SPEED])
         elif side == 1:
             x = RADIUS + 1
-            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
             y_s = random.choice([SPEED, -SPEED])
             x_s = SPEED
         elif side == 2:
-            x = 1920 - (RADIUS + 1)
-            y = random.choice([RADIUS * 4, 1080 // 2, 1080 - RADIUS * 4])
+            x = width - (RADIUS + 1)
+            y = random.choice([RADIUS * 4, height // 2, height - RADIUS * 4])
             y_s = random.choice([SPEED, -SPEED])
             x_s = -SPEED
         elif side == 3:
-            x = random.choice([RADIUS * 4, 1920 // 2, 1920 - RADIUS * 4])
-            y = 1080 - (RADIUS + 1)
+            x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
+            y = height - (RADIUS + 1)
             y_s = -SPEED
             x_s = random.choice([SPEED, -SPEED])
         Enemies_dvd(x, y, x_s, y_s)
 
 
+def draw(screen):
+    font = pygame.font.Font(None, 50 * Size_k)
+    text = font.render("Hello, Pygame!", True, (100, 255, 100))
+    text_x = width - (width // 15 * Size_k) - text.get_width() // 2
+    text_y = height // 20 * Size_k - text.get_height() // 2
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, (0, 255, 0), (text_x - 10, text_y - 10,
+                                           text_w + 20, text_h + 20), 1)
+
+
+
 def play():
-    collor = pygame.Color('blue')
+    global HARD
+    if HARD == 0:
+        TIME_S = 0
+    elif HARD == 1:
+        TIME_S = 15
+    elif HARD == 2:
+        TIME_S = 10
+    elif HARD == 3:
+        TIME_S = 5
+    collor = pygame.Color('white')
     if __name__ == '__main__':
+
         time = 0
         mouse_cursor = pygame.Surface((35 * 2, 35 * 2), pygame.SRCALPHA, 32)
         pygame.draw.circle(mouse_cursor, pygame.Color("black"),
                            (35, 35), 35, 3)
-        X = 1920
-        Y = 1080
+        X = width
+        Y = height
+        if time / FPS > 1:
+            HARD = 1
+        if time / FPS > 30:
+            HARD = 2
+        if time / FPS > 120:
+            HARD = 3
         screen = pygame.display.set_mode((X, Y))
         screen.fill(collor)
         pygame.mouse.set_visible(False)
@@ -233,6 +290,7 @@ def play():
         pause = False
         clock = pygame.time.Clock()
         while running:
+            draw(screen)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -243,7 +301,7 @@ def play():
                         else:
                             pause = True
             time += 1
-            if (time / FPS) % 15 == 0:
+            if (time / FPS) % 10 == 0:
                 print('spawn')
                 slow()
                 Circal_dvd()
