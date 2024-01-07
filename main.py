@@ -7,10 +7,14 @@ pygame.init()
 infoObject = pygame.display.Info()
 print(infoObject.current_w, infoObject.current_h)
 width, height = (infoObject.current_w, infoObject.current_h)
+time = 0
+pause = True
 Size_k = width // 1920
-RADIUS = 35
+RADIUS = 35 * Size_k
 FPS = 120
 HARD = 0
+pygame.init()
+screen = pygame.display.set_mode((width, height))
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, x_s, y_s):
@@ -26,6 +30,16 @@ class Bullet(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
+        if HARD == 0:
+            k = 0
+        elif HARD == 1:
+            k = 1
+        elif HARD == 2:
+            k = 1
+        elif HARD == 3:
+            k = 1.5
+        elif HARD == 3:
+            k = 1.5
         self.y_s = y_s * Size_k
         self.x_s = x_s * Size_k
 
@@ -125,12 +139,10 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.pos = (width // 2, height // 2)
-        self.radius = 35
-        self.image = pygame.Surface((2 * self.radius, 2 * self.radius),
+        self.image = pygame.Surface((2 * RADIUS, 2 * RADIUS),
                                     pygame.SRCALPHA, 32)
         pygame.draw.circle(self.image, pygame.Color("black"),
-                           (self.radius, self.radius), self.radius)
-        pygame.draw.circle(self.image, pygame.Color('white'), (self.radius, self.radius), self.radius * 0.47)
+                           (RADIUS, RADIUS), RADIUS)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = self.pos[0]
@@ -142,10 +154,13 @@ class Player(pygame.sprite.Sprite):
             offset = (abs(self.rect.x - en.rect.x), abs(self.rect.y - en.rect.y))
             if self.mask.overlap_area(en.mask, offset) > 0:
                 print('collides')
+                die()
         if pygame.sprite.spritecollideany(self, horizontal):
             print('collides')
+            die()
         if pygame.sprite.spritecollideany(self, vertical):
             print('collides')
+            die()
         mouse_x, mouse_y = pygame.mouse.get_pos()
         dx = mouse_x - self.rect.centerx
         dy = mouse_y - self.rect.centery
@@ -181,6 +196,9 @@ def slow():
         SPEED = 1
     elif HARD == 3:
         NUM = 6
+        SPEED = 1.5
+    elif HARD == 4:
+        NUM = 10
         SPEED = 1.5
     for i in range(NUM):
         side = random.randint(0, 3)
@@ -219,6 +237,9 @@ def Circal_dvd():
     elif HARD == 3:
         NUM = 6
         SPEED = 4
+    elif HARD == 4:
+        NUM = 10
+        SPEED = 5
     for i in range(NUM):
         side = random.randint(0, 3)
         if side == 0:
@@ -244,53 +265,94 @@ def Circal_dvd():
         Enemies_dvd(x, y, x_s, y_s)
 
 
-def draw(screen):
+def difficulty():
+    global HARD
+    if time / FPS > 1:
+        HARD = 1
+    if time / FPS > 60:
+        HARD = 2
+    if time / FPS > 220:
+        HARD = 3
+    if time / FPS > 450:
+        HARD = 4
+
+
+def draw():
+    Color = pygame.Color('black')
     font = pygame.font.Font(None, 50 * Size_k)
-    text = font.render("Hello, Pygame!", True, (100, 255, 100))
+    text = font.render(f"{time // FPS} | {HARD}", True, Color)
     text_x = width - (width // 15 * Size_k) - text.get_width() // 2
     text_y = height // 20 * Size_k - text.get_height() // 2
     text_w = text.get_width()
     text_h = text.get_height()
     screen.blit(text, (text_x, text_y))
-    pygame.draw.rect(screen, (0, 255, 0), (text_x - 10, text_y - 10,
-                                           text_w + 20, text_h + 20), 1)
+    pygame.draw.rect(screen, Color, (text_x - 10, text_y - 10,
+                                           text_w + 20, text_h + 20), 1 * Size_k)
+
+
+def die():
+    global pause
+    pause = False
+    screen.fill((255, 255, 255))
+    Color = pygame.Color('black')
+    font = pygame.font.Font(None, 50 * Size_k)
+    text = font.render(f"you dead!", True, Color)
+    text_x = width // 2 - text.get_width() // 2
+    text_y = height // 2 - text.get_height() // 2
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, Color, (text_x - 10, text_y - 10,
+                                           text_w + 20, text_h + 20), 1 * Size_k)
+
+
+def game():
+    global time
+    if __name__ == '__main__':
+        collor = pygame.Color('white')
+        mouse_cursor = pygame.Surface((35 * 2, 35 * 2), pygame.SRCALPHA, 32)
+        pygame.draw.circle(mouse_cursor, pygame.Color("black"),
+                           (35, 35), 35, 3)
+
+        difficulty()
+        if HARD == 0:
+            TIME_S = 0
+        elif HARD == 1:
+            TIME_S = 15
+        elif HARD == 2:
+            TIME_S = 10
+        elif HARD == 3:
+            TIME_S = 5
+        elif HARD == 4:
+            TIME_S = 2
+        draw()
+
+        time += 1
+        if TIME_S == 0:
+            pass
+        elif TIME_S > 0:
+            if (time / FPS) % TIME_S == 0:
+                print('spawn')
+                slow()
+                Circal_dvd()
+        x, y = pygame.mouse.get_pos()
+        screen.blit(mouse_cursor, (x - 35, y - 35))
+        all_sprites.update()
+        all_sprites.draw(screen)
+        pygame.display.flip()
+        screen.fill(collor)
 
 
 
 def play():
-    global HARD
-    if HARD == 0:
-        TIME_S = 0
-    elif HARD == 1:
-        TIME_S = 15
-    elif HARD == 2:
-        TIME_S = 10
-    elif HARD == 3:
-        TIME_S = 5
-    collor = pygame.Color('white')
+    global time, pause
     if __name__ == '__main__':
-
-        time = 0
-        mouse_cursor = pygame.Surface((35 * 2, 35 * 2), pygame.SRCALPHA, 32)
-        pygame.draw.circle(mouse_cursor, pygame.Color("black"),
-                           (35, 35), 35, 3)
-        X = width
-        Y = height
-        if time / FPS > 1:
-            HARD = 1
-        if time / FPS > 30:
-            HARD = 2
-        if time / FPS > 120:
-            HARD = 3
-        screen = pygame.display.set_mode((X, Y))
+        collor = pygame.Color('white')
         screen.fill(collor)
         pygame.mouse.set_visible(False)
-        pygame.init()
         running = True
-        pause = False
         clock = pygame.time.Clock()
         while running:
-            draw(screen)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -300,17 +362,8 @@ def play():
                             pause = False
                         else:
                             pause = True
-            time += 1
-            if (time / FPS) % 10 == 0:
-                print('spawn')
-                slow()
-                Circal_dvd()
-            x, y = pygame.mouse.get_pos()
-            screen.blit(mouse_cursor, (x - 35, y - 35))
-            all_sprites.update()
-            all_sprites.draw(screen)
-            pygame.display.flip()
-            screen.fill(collor)
+            if pause:
+                game()
         clock.tick(120)
     pygame.quit()
 
