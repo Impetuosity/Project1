@@ -335,6 +335,7 @@ def die():
     cr.execute("""INSERT INTO results VALUES(?, ?, ?)""", (d[-1], d[0], ps))
     con.commit()
     cr.close()
+    pygame.display.update()
     tr.sleep(3)
     pygame.quit()
     
