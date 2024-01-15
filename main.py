@@ -4,6 +4,8 @@ import pygame
 import random
 import sqlite3
 import time as tr
+import sys
+import subprocess
 
 # Инициализация
 pygame.init()
@@ -335,7 +337,7 @@ def die():
     screen.fill((255, 255, 255))
     Color = pygame.Color('black')
     font = pygame.font.Font(None, int(50 * Size_k))
-    text = font.render(f"you dead!", True, Color)
+    text = font.render(f"you are dead!", True, Color)
     text_x = width // 2 - text.get_width() // 2
     text_y = height // 2 - text.get_height() // 2
     text_w = text.get_width()
@@ -352,10 +354,12 @@ def die():
     con.close()
     pygame.display.update()
     tr.sleep(3)
-    pygame.quit()
+    python = sys.executable
+    subprocess.call([python, __file__])
+    sys.exit()
 
 
-def game():
+def game(s):
     global time
     if __name__ == '__main__':
         collor = pygame.Color('white')
@@ -385,11 +389,11 @@ def game():
                 slow()
                 Circal_dvd()
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        screen.blit(mouse_cursor, (mouse_x - RADIUS, mouse_y - RADIUS))
+        s.blit(mouse_cursor, (mouse_x - RADIUS, mouse_y - RADIUS))
         all_sprites.update()
-        all_sprites.draw(screen)
+        all_sprites.draw(s)
         pygame.display.flip()
-        screen.fill(collor)
+        s.fill(collor)
 
 class Batton:
     def __init__(self, text, step):
@@ -418,12 +422,12 @@ B_S = Batton('Start', 0.3)
 B_R = Batton('Result', 0.45)
 B_Q = Batton('Quite', 0.6)
 
-def play():
+def play(s):
     global time, pause
     if __name__ == '__main__':
         pygame.mixer.music.play()
         collor = pygame.Color('white')
-        screen.fill(collor)
+        s.fill(collor)
         pygame.mouse.set_visible(False)
         running = True
         clock = pygame.time.Clock()
@@ -442,13 +446,23 @@ def play():
                             pygame.mouse.set_pos(mouse_x, mouse_y)
                             pygame.mixer.music.unpause()
             if pause:
-                game()
+                game(s)
         clock.tick(120)
     pygame.quit()
 
 
 # Инициализация
-
+enemies = pygame.sprite.Group()
+horizontal = pygame.sprite.Group()
+vertical = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+Border(0, 0, width, 0)
+Border(0, height, width, height)
+Border(0, 0, 0, height)
+Border(width, 0, width, height)
+player = Player()
+all_sprites.add(player)
 # Установка размеров окна
 win = pygame.display.set_mode((width, height))
 
@@ -488,19 +502,9 @@ while run:
                 print(width, height)
                 simple_win = pygame.display.set_mode((width, height))
                 simple_win.fill(black)
-                enemies = pygame.sprite.Group()
-                horizontal = pygame.sprite.Group()
-                vertical = pygame.sprite.Group()
-                all_sprites = pygame.sprite.Group()
-                enemies = pygame.sprite.Group()
-                Border(0, 0, width, 0)
-                Border(0, height, width, height)
-                Border(0, 0, 0, height)
-                Border(width, 0, width, height)
-                player = Player()
                 ps = 0
-                all_sprites.add(player)
-                play()
+                play(simple_win)
+                run = False
 
             elif B_R.push():
                 # Открываем окно с кнопкой для возврата
