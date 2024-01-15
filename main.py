@@ -7,6 +7,12 @@ import time as tr
 
 # Инициализация
 pygame.init()
+pygame.mixer.music.load('geoffplaysguitar - The Only Thing I Know For Real (Instrumental) -Geoffrey Day, Andrew Baena,'
+                        ' The Maniac Agenda).wav')
+
+pygame.mixer.music.set_volume(0.5)
+s_d = pygame.mixer.Sound('die_s.mp3')
+s_s = pygame.mixer.Sound('spawn_s.mp3')
 infoObject = pygame.display.Info()
 print(infoObject.current_w, infoObject.current_h)
 width, height = (infoObject.current_w, infoObject.current_h)
@@ -323,6 +329,8 @@ def draw():
 def die():
     global pause, ps, time, FPS
     pygame.mouse.set_visible(True)
+    s_d.play()
+    pygame.mixer.music.stop()
     pause = False
     screen.fill((255, 255, 255))
     Color = pygame.Color('black')
@@ -334,7 +342,7 @@ def die():
     text_h = text.get_height()
     screen.blit(text, (text_x, text_y))
     pygame.draw.rect(screen, Color, (text_x - 10, text_y - 10,
-                                     text_w + 20, text_h + 20), 1 * Size_k)
+                                     text_w + 20, text_h + 20), 1)
     ps = time // FPS
     con = sqlite3.connect('films_db.sqlite')
     d = datetime.datetime.now().strftime("%d.%m.%Y-%H:%M").split('-')
@@ -373,7 +381,7 @@ def game():
             pass
         elif TIME_S > 0:
             if (time / FPS) % TIME_S == 0:
-                print('spawn')
+                s_s.play()
                 slow()
                 Circal_dvd()
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -413,6 +421,7 @@ B_Q = Batton('Quite', 0.6)
 def play():
     global time, pause
     if __name__ == '__main__':
+        pygame.mixer.music.play()
         collor = pygame.Color('white')
         screen.fill(collor)
         pygame.mouse.set_visible(False)
@@ -427,9 +436,11 @@ def play():
                         if pause:
                             pause = False
                             mouse_x, mouse_y = pygame.mouse.get_pos()
+                            pygame.mixer.music.pause()
                         else:
                             pause = True
                             pygame.mouse.set_pos(mouse_x, mouse_y)
+                            pygame.mixer.music.unpause()
             if pause:
                 game()
         clock.tick(120)
