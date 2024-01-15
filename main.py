@@ -1,23 +1,28 @@
-import pygame
+import datetime
 import math
+import pygame
 import random
+import sqlite3
+import time as tr
 
-
+# Инициализация
 pygame.init()
 infoObject = pygame.display.Info()
 print(infoObject.current_w, infoObject.current_h)
 width, height = (infoObject.current_w, infoObject.current_h)
 time = 0
 pause = True
-Size_k = width // 1920
-RADIUS = 35 * Size_k
+Size_k = width / 1920
+RADIUS = int(35 * Size_k)
 FPS = 120
 HARD = 0
 pygame.init()
+# Установка размеров окна
 screen = pygame.display.set_mode((width, height))
 
+
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, x_s, y_s):
+    def __init__(self, x_coord, y_coord, x_s, y_s):
         super().__init__(enemies)
         self.lifetime = FPS * 15
         self.add(enemies)
@@ -28,8 +33,8 @@ class Bullet(pygame.sprite.Sprite):
                            (RADIUS, RADIUS), RADIUS)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x = x_coord
+        self.rect.y = y_coord
         if HARD == 0:
             k = 0
         elif HARD == 1:
@@ -40,8 +45,8 @@ class Bullet(pygame.sprite.Sprite):
             k = 1.5
         elif HARD == 3:
             k = 1.5
-        self.y_s = y_s * Size_k
-        self.x_s = x_s * Size_k
+        self.y_s = int(y_s * Size_k)
+        self.x_s = int(x_s * Size_k)
 
     def update(self):
         if self.lifetime < 0:
@@ -51,7 +56,7 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Enemies_slowly(pygame.sprite.Sprite):
-    def __init__(self, x, y, x_s, y_s):
+    def __init__(self, x_coord, y_coord, x_s, y_s):
         super().__init__(enemies)
         self.lifetime = FPS * 10
         self.add(enemies)
@@ -62,12 +67,10 @@ class Enemies_slowly(pygame.sprite.Sprite):
                            (RADIUS, RADIUS), RADIUS)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = x
-        self.rect.y = y
-        self.y_s = y_s * Size_k
-        self.x_s = x_s * Size_k
-
-
+        self.rect.x = x_coord
+        self.rect.y = y_coord
+        self.y_s = int(y_s * Size_k)
+        self.x_s = int(x_s * Size_k)
 
     def bam(self):
         Bullet(self.rect.x, self.rect.y, -2, -2)
@@ -93,7 +96,7 @@ class Enemies_slowly(pygame.sprite.Sprite):
 
 
 class Enemies_dvd(pygame.sprite.Sprite):
-    def __init__(self, x, y, x_s, y_s):
+    def __init__(self, x_coord, y_coord, x_s, y_s):
         super().__init__(enemies)
         self.lifetime = 3
         self.add(enemies)
@@ -104,10 +107,10 @@ class Enemies_dvd(pygame.sprite.Sprite):
                            (RADIUS, RADIUS), RADIUS)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = x
-        self.rect.y = y
-        self.y_s = y_s * Size_k
-        self.x_s = x_s * Size_k
+        self.rect.x = x_coord
+        self.rect.y = y_coord
+        self.y_s = int(y_s * Size_k)
+        self.x_s = int(x_s * Size_k)
 
     def update(self):
         if self.lifetime < 0:
@@ -119,7 +122,6 @@ class Enemies_dvd(pygame.sprite.Sprite):
         if pygame.sprite.spritecollideany(self, vertical):
             self.x_s = -self.x_s
             self.lifetime -= 1
-
 
 
 class Border(pygame.sprite.Sprite):
@@ -147,7 +149,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = self.pos[0]
         self.rect.y = self.pos[1]
-        self.player_speed = 9 * Size_k
+        self.player_speed = int(9 * Size_k)
 
     def update(self):
         for en in enemies:
@@ -171,19 +173,6 @@ class Player(pygame.sprite.Sprite):
             self.rect.center = pygame.mouse.get_pos()
 
 
-enemies = pygame.sprite.Group()
-horizontal = pygame.sprite.Group()
-vertical = pygame.sprite.Group()
-all_sprites = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
-Border(0, 0, width, 0)
-Border(0, height, width, height)
-Border(0, 0, 0, height)
-Border(width, 0, width, height)
-player = Player()
-all_sprites.add(player)
-
-
 def slow():
     if HARD == 0:
         NUM = 0
@@ -200,7 +189,7 @@ def slow():
     elif HARD == 4:
         NUM = 10
         SPEED = 1.5
-    for i in range(NUM):
+    for _ in range(NUM):
         side = random.randint(0, 3)
         if side == 0:
             x = random.choice([RADIUS * 4, width // 2, width - RADIUS * 4])
@@ -243,6 +232,7 @@ def slow():
             elif width // 2:
                 x_s = random.choice([SPEED, -SPEED])
         Enemies_slowly(x, y, x_s, y_s)
+
 
 def Circal_dvd():
     if HARD == 0:
@@ -319,24 +309,24 @@ def difficulty():
 
 def draw():
     Color = pygame.Color('black')
-    font = pygame.font.Font(None, 50 * Size_k)
+    font = pygame.font.Font(None, int(50 * Size_k))
     text = font.render(f"{time // FPS} | {HARD}", True, Color)
-    text_x = width - (width // 15 * Size_k) - text.get_width() // 2
-    text_y = height // 20 * Size_k - text.get_height() // 2
+    text_x = width - (int(width // 15 * Size_k)) - text.get_width() // 2
+    text_y = int(height // 20 * Size_k) - text.get_height() // 2
     text_w = text.get_width()
     text_h = text.get_height()
     screen.blit(text, (text_x, text_y))
     pygame.draw.rect(screen, Color, (text_x - 10, text_y - 10,
-                                           text_w + 20, text_h + 20), 1 * Size_k)
+                                     text_w + 20, text_h + 20), int(1 * Size_k))
 
 
 def die():
-    global pause
+    global pause, ps, time, FPS
     pygame.mouse.set_visible(True)
     pause = False
     screen.fill((255, 255, 255))
     Color = pygame.Color('black')
-    font = pygame.font.Font(None, 50 * Size_k)
+    font = pygame.font.Font(None, int(50 * Size_k))
     text = font.render(f"you dead!", True, Color)
     text_x = width // 2 - text.get_width() // 2
     text_y = height // 2 - text.get_height() // 2
@@ -344,16 +334,26 @@ def die():
     text_h = text.get_height()
     screen.blit(text, (text_x, text_y))
     pygame.draw.rect(screen, Color, (text_x - 10, text_y - 10,
-                                           text_w + 20, text_h + 20), 1 * Size_k)
+                                     text_w + 20, text_h + 20), 1 * Size_k)
+    ps = time // FPS
+    con = sqlite3.connect('films_db.sqlite')
+    d = datetime.datetime.now().strftime("%d.%m.%Y-%H:%M").split('-')
+    cr = con.cursor()
+    cr.execute("""INSERT INTO results VALUES(?, ?, ?)""", (d[-1], d[0], ps))
+    con.commit()
+    con.close()
+    pygame.display.update()
+    tr.sleep(3)
+    pygame.quit()
 
 
 def game():
     global time
     if __name__ == '__main__':
         collor = pygame.Color('white')
-        mouse_cursor = pygame.Surface((35 * 2, 35 * 2), pygame.SRCALPHA, 32)
+        mouse_cursor = pygame.Surface((RADIUS * 2, RADIUS * 2), pygame.SRCALPHA, 32)
         pygame.draw.circle(mouse_cursor, pygame.Color("black"),
-                           (35, 35), 35, 3)
+                           (RADIUS, RADIUS), RADIUS, int(3 * Size_k))
 
         difficulty()
         if HARD == 0:
@@ -376,14 +376,39 @@ def game():
                 print('spawn')
                 slow()
                 Circal_dvd()
-        x, y = pygame.mouse.get_pos()
-        screen.blit(mouse_cursor, (x - 35, y - 35))
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        screen.blit(mouse_cursor, (mouse_x - RADIUS, mouse_y - RADIUS))
         all_sprites.update()
         all_sprites.draw(screen)
         pygame.display.flip()
         screen.fill(collor)
 
+class Batton:
+    def __init__(self, text, step):
+        self.Color = pygame.Color('white')
+        font = pygame.font.Font(None, int(150 * Size_k))
+        self.text = font.render(text, True, self.Color)
+        self.text_x = width - (int(width // 2)) - self.text.get_width() // 2
+        self.text_y = int(height * step * Size_k) - self.text.get_height() // 2
+        self.text_w = self.text.get_width()
+        self.text_h = self.text.get_height()
 
+    def draw_but(self):
+        screen.blit(self.text, (self.text_x, self.text_y))
+        pygame.draw.rect(screen, self.Color, (width * 0.5 - width * 0.1 - int(20 * Size_k), self.text_y - int(20 * Size_k),
+                                         width * 0.2 + int(40 * Size_k), self.text_h + int(40 * Size_k)), int(2 * Size_k))
+
+    def push(self):
+        x, y = pygame.mouse.get_pos()
+        if self.text_x <= x <= (self.text_x + self.text_w) and self.text_y <= y <= (self.text_y + self.text_h):
+            return True
+        else:
+            return False
+
+
+B_S = Batton('Start', 0.3)
+B_R = Batton('Result', 0.45)
+B_Q = Batton('Quite', 0.6)
 
 def play():
     global time, pause
@@ -401,12 +426,122 @@ def play():
                     if event.key == pygame.K_ESCAPE:
                         if pause:
                             pause = False
+                            mouse_x, mouse_y = pygame.mouse.get_pos()
                         else:
                             pause = True
+                            pygame.mouse.set_pos(mouse_x, mouse_y)
             if pause:
                 game()
         clock.tick(120)
     pygame.quit()
 
 
-play()
+# Инициализация
+
+# Установка размеров окна
+win = pygame.display.set_mode((width, height))
+
+# Цвета
+black = (0, 0, 0)
+white = (255, 255, 255)
+
+# Шрифты
+font = pygame.font.SysFont(None, 128)
+
+# Тексты
+back_text = font.render('Back', True, white)
+end_btn_text = font.render('Return to lobby', True, white)
+
+# Основной цикл
+run = True
+while run:
+    win.fill(black)
+
+    # Рисуем кнопки
+
+    # Рисуем тексты на кнопках
+    B_S.draw_but()
+    B_R.draw_but()
+    B_Q.draw_but()
+    name = pygame.font.SysFont(None, int(200 * Size_k)).render('Just Survive', False,
+                                                 (255, 255, 255))
+    win.blit(name, (int(555 * Size_k), int(76 * Size_k)))
+
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if B_S.push():
+                # Открываем обычное окно
+                print(width, height)
+                simple_win = pygame.display.set_mode((width, height))
+                simple_win.fill(black)
+                enemies = pygame.sprite.Group()
+                horizontal = pygame.sprite.Group()
+                vertical = pygame.sprite.Group()
+                all_sprites = pygame.sprite.Group()
+                enemies = pygame.sprite.Group()
+                Border(0, 0, width, 0)
+                Border(0, height, width, height)
+                Border(0, 0, 0, height)
+                Border(width, 0, width, height)
+                player = Player()
+                ps = 0
+                all_sprites.add(player)
+                play()
+
+            elif B_R.push():
+                # Открываем окно с кнопкой для возврата
+                sub_win = pygame.display.set_mode((width, height))
+                sub_win.fill(black)
+                pygame.draw.rect(sub_win, (255, 255, 255), (int(width * 0.78), int(height * 0.88), int(width * 0.21), int(height * 0.09)),
+                                 int(5 * Size_k), int(20 * Size_k))
+                sub_win.blit(back_text, (int(1600 * Size_k), int(964 * Size_k)))
+
+                name = pygame.font.SysFont(None, int(200 * Size_k)).render('Results', False,
+                                                             (255, 255, 255))
+                sub_win.blit(name, (int(700 * Size_k), int(76 * Size_k)))
+                con = sqlite3.connect('films_db.sqlite')
+                cur = con.cursor()
+                results = cur.execute("""SELECT * FROM results""").fetchall()
+                con.close()
+                points = []
+                spisok = {}
+                for elem in results:
+                    points.append(elem[-1])
+                    spisok[elem[-1]] = [elem[1], elem[0]]
+                points = sorted(points, reverse=True)
+                for i in range(len(points)):
+                    if i == 7:
+                        break
+                    point = pygame.font.SysFont(None, int(100 * Size_k)).render(str(points[i]), False,
+                                                                  (255, 255, 255))
+                    sub_win.blit(point, (int(500 * Size_k), int((300 + i * 75) * Size_k)))
+                    date = pygame.font.SysFont(None, int(100 * Size_k)).render(str(spisok[points[i]][0]), False,
+                                                                 (255, 255, 255))
+                    sub_win.blit(date, (int(800 * Size_k), int((300 + i * 75) * Size_k)))
+                    time_surf = pygame.font.SysFont(None, int(100 * Size_k)).render(str(spisok[points[i]][1]), False,
+                                                                 (255, 255, 255))
+                    sub_win.blit(time_surf, (int(1200 * Size_k), int((300 + i * 75) * Size_k)))
+                pygame.display.update()
+                sub_run = True
+                while sub_run:
+                    for sub_event in pygame.event.get():
+                        if sub_event.type == pygame.QUIT:
+                            run = False
+                            sub_run = False
+                        if sub_event.type == pygame.MOUSEBUTTONDOWN:
+                            sub_x, sub_y = pygame.mouse.get_pos()
+                            if int(1500 * Size_k) <= sub_x <= int(1912 * Size_k) and int(960 * Size_k) <= sub_y\
+                                    <= int(1060 * Size_k):
+                                sub_run = False
+
+            elif B_Q.push():
+                # Завершаем игру
+                run = False
+
+    pygame.display.update()
+
+# Завершение
+pygame.quit()
