@@ -1,0 +1,8 @@
+datetime
+math
+random
+sqlite3
+time
+sys
+subprocess
+pygame==2.1.2
